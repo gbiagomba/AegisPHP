@@ -26,7 +26,7 @@ AegisPHP was born from the frustration of wrestling with incompatible PHP SAST i
 ## Installation
 
 ### Prerequisites
-- Docker � 20.x  
+- Docker ≥ 20.x
 - Python 3.8+  
 
 ### Build Docker Image
