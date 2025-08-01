@@ -37,8 +37,9 @@ docker build -t aegisphp .
 
 ## Flags
 
-Flag	Description
--o, --output	Path to write combined JSON report (default: timestamped in cwd)
+Flag | Description
+--- | ---
+`-o`, `--output` | Path to write combined JSON report (default: timestamped in cwd)
 
 ### Usage
 
@@ -50,7 +51,7 @@ Or specify your own output path:
 ```bash
 ./aegisphp.py /path/to/project -o /path/to/my-report.json
 ```
-You�ll see each tool�s progress in stdout, and at the end a combined JSON report.
+You'll see each tool's progress in stdout, and at the end a combined JSON report.
 
 ---
 
@@ -76,16 +77,12 @@ clean:
 .PHONY: build scan clean
 ```
 
----
-
 ## Contributing
 	1.	Fork the repo
 	2.	Create a branch (git checkout -b feature/my-scan-rule)
 	3.	Submit a PR with tests or examples for new rules or normalizations
 
 Please keep the focus strictly on PHP security scanning�no lint or style features.
-
----
 
 ## License
 
