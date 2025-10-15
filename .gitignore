@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+.env
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# PHALANX output artifacts
+PHALANX_output-*.json
+AegisPHP_output-*.json
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Security & secrets
+*.key
+*.pem
+*.p12
+credentials.json
+secrets.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
