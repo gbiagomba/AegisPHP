@@ -9,7 +9,7 @@ TARGET     ?= .
 OUTPUT     ?= PHALANX_output-$(shell date +"%Y%m%d_%H%M%S").json
 PYTHON     := python3
 INSTALL_DIR := /usr/local/bin
-VERSION    := 0.1.0
+VERSION    := 0.2.0
 
 # Colors for output
 BOLD       := \033[1m

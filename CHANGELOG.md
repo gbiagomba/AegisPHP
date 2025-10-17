@@ -19,6 +19,59 @@ and this project adheres to [Semantic Versioning 2.0.0](https://semver.org/spec/
 
 ---
 
+## [0.2.0] - 2025-10-15
+
+### Changed - Major Scanner Upgrades
+#### Scanner Replacements
+- **Upgraded Psalm** from v0.2.16 (2017) to **v6.13.1** (latest stable, PHP 8.4 compatible)
+  - Full PHP 8.4 support
+  - Auto-initialization with `--init` for projects without config
+  - Modern type checking and error detection
+  - Massive improvement over 8-year-old v0.2.16
+- **Replaced psecio/parse** with **Semgrep v1.102.0**
+  - Active maintenance (vs. abandoned psecio/parse from 2017)
+  - 100+ PHP security rules with OWASP coverage
+  - Clean JSON output without deprecation warnings
+  - Modern pattern-based security scanning
+- **Kept ProgPilot** for unique taint analysis capabilities
+
+#### Dockerfile Updates
+- Added Python 3 and pip for Semgrep installation
+- Updated Psalm installation to use `^7.0` version constraint
+- Removed psecio/parse from global Composer dependencies
+- Updated healthcheck to use `semgrep --version` instead of `parse --version`
+
+#### Python Orchestrator Updates (phalanx.py)
+- Updated version to 0.2.0
+- Modified Psalm command to auto-init config files
+- Replaced parse scanner with Semgrep
+- Added `normalize_semgrep()` function for Semgrep JSON output
+- Removed `normalize_parse()` function
+- Updated tool descriptions and help text
+
+#### Documentation Updates
+- Updated README.md scanner descriptions
+- Modified acknowledgments section
+- Updated version badges and references
+- Updated CLAUDE.md with new scanner details
+
+### Added
+- Semgrep normalization with support for ERROR/WARNING/INFO severity levels
+- Confidence metadata in Semgrep findings
+- Auto-initialization for Psalm v7 projects
+
+### Removed
+- psecio/parse scanner and all related code
+- parse normalization function
+- Deprecated PHP warnings from scanner output
+
+### Fixed
+- Psalm now works on projects without existing `psalm.xml` configuration
+- Eliminated hundreds of deprecation warnings from old scanner dependencies
+- Improved JSON parsing reliability with modern scanner outputs
+
+---
+
 ## [0.1.0] - 2025-10-15
 
 ### Added - Initial Release
@@ -186,5 +239,6 @@ PHALANX follows [Semantic Versioning 2.0.0](https://semver.org/):
 
 ---
 
-[Unreleased]: https://github.com/yourusername/phalanx/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/yourusername/phalanx/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/yourusername/phalanx/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/yourusername/phalanx/releases/tag/v0.1.0

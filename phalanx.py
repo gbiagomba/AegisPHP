@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 PHALANX - PHP Security Analysis Tool
-A unified PHP SAST orchestrator using Psalm, parse, and ProgPilot
-Version: 0.1.0
+A unified PHP SAST orchestrator using Psalm, Semgrep, and ProgPilot
+Version: 0.2.0
 """
 import argparse
 import subprocess
@@ -11,11 +11,11 @@ import sys
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 IMAGE_NAME = "phalanx"
 
 # Configure logging with security-conscious settings
@@ -178,23 +178,38 @@ def normalize_psalm(data: Dict) -> List[Dict]:
         logger.error(f"Error normalizing Psalm output: {e}")
     return findings
 
-def normalize_parse(data: Dict) -> List[Dict]:
-    """Normalize psecio/parse output to standard format."""
+def normalize_semgrep(data: Dict) -> List[Dict]:
+    """Normalize Semgrep output to standard format."""
     findings = []
     try:
-        for issue in data.get("findings", []):
-            sev = issue.get("severity", "warning").lower()
+        # Semgrep JSON format: {"results": [...], "errors": [...]}
+        for result in data.get("results", []):
+            # Map Semgrep severity to our standard levels
+            sev = result.get("extra", {}).get("severity", "WARNING").upper()
+            sev_map = {
+                "ERROR": "high",
+                "WARNING": "medium",
+                "INFO": "low"
+            }
+
+            # Get check metadata
+            check_id = result.get("check_id", "")
+            message = result.get("extra", {}).get("message", "")
+
             findings.append({
-                "tool": "parse",
-                "title": str(issue.get("title") or issue.get("message", ""))[:500],
-                "file": str(issue.get("file", ""))[:1000],
-                "line": int(issue.get("line", 0)),
-                "severity": SEV_MAP.get(sev, "medium"),
-                "code": str(issue.get("code", ""))[:1000],
-                "metadata": {"rule": str(issue.get("rule", ""))[:100]}
+                "tool": "semgrep",
+                "title": str(message)[:500] if message else str(check_id)[:500],
+                "file": str(result.get("path", ""))[:1000],
+                "line": int(result.get("start", {}).get("line", 0)),
+                "severity": sev_map.get(sev, "medium"),
+                "code": str(result.get("extra", {}).get("lines", ""))[:1000],
+                "metadata": {
+                    "rule": str(check_id)[:100],
+                    "confidence": str(result.get("extra", {}).get("metadata", {}).get("confidence", ""))[:50]
+                }
             })
     except Exception as e:
-        logger.error(f"Error normalizing parse output: {e}")
+        logger.error(f"Error normalizing Semgrep output: {e}")
     return findings
 
 def normalize_progpilot(data: Dict) -> List[Dict]:
@@ -219,7 +234,7 @@ def normalize_progpilot(data: Dict) -> List[Dict]:
 def main() -> int:
     """Main entry point for PHALANX."""
     parser = argparse.ArgumentParser(
-        description="PHALANX: Unified PHP SAST orchestrator (Psalm, parse, ProgPilot)",
+        description="PHALANX: Unified PHP SAST orchestrator (Psalm, Semgrep, ProgPilot)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"PHALANX v{__version__}\nA defensive security tool for PHP vulnerability detection."
     )
@@ -271,14 +286,14 @@ def main() -> int:
         return 1
 
     # Run each security tool in its container
-    logger.info("Running Psalm security scanner...")
+    logger.info("Running Psalm v7 security scanner...")
     psalm_cmd = [
         "docker", "run", "--rm",
         "--security-opt=no-new-privileges",
         "--cap-drop=ALL",
         "-v", f"{target_dir}:/app:ro",
         IMAGE_NAME,
-        "psalm", "--output-format=json"
+        "sh", "-c", "cd /app && (psalm --init --level=1 2>/dev/null || true) && psalm --output-format=json --no-cache ."
     ]
     psalm_out = run_tool(psalm_cmd, "Psalm")
 
@@ -288,22 +303,22 @@ def main() -> int:
         logger.warning("Psalm output is not valid JSON, using empty result")
         psalm_json = {}
 
-    logger.info("Running psecio/parse security scanner...")
-    parse_cmd = [
+    logger.info("Running Semgrep security scanner...")
+    semgrep_cmd = [
         "docker", "run", "--rm",
         "--security-opt=no-new-privileges",
         "--cap-drop=ALL",
         "-v", f"{target_dir}:/app:ro",
         IMAGE_NAME,
-        "parse", "scan", "/app", "--format", "json"
+        "semgrep", "--config=auto", "--json", "/app"
     ]
-    parse_out = run_tool(parse_cmd, "parse")
+    semgrep_out = run_tool(semgrep_cmd, "Semgrep")
 
     try:
-        parse_json = json.loads(parse_out)
+        semgrep_json = json.loads(semgrep_out)
     except json.JSONDecodeError:
-        logger.warning("parse output is not valid JSON, using empty result")
-        parse_json = {}
+        logger.warning("Semgrep output is not valid JSON, using empty result")
+        semgrep_json = {}
 
     logger.info("Running ProgPilot security scanner...")
     prog_cmd = [
@@ -312,8 +327,7 @@ def main() -> int:
         "--cap-drop=ALL",
         "-v", f"{target_dir}:/workspace:ro",
         IMAGE_NAME,
-        "php", "/home/phalanx/progpilot/src/ProgPilot.php",
-        "--level", "high", "--target", "/workspace", "--output=json"
+        "php", "/home/phalanx/progpilot_wrapper.php", "/workspace"
     ]
     prog_out = run_tool(prog_cmd, "ProgPilot")
 
@@ -326,7 +340,7 @@ def main() -> int:
     # Normalize all findings
     all_findings = []
     all_findings.extend(normalize_psalm(psalm_json))
-    all_findings.extend(normalize_parse(parse_json))
+    all_findings.extend(normalize_semgrep(semgrep_json))
     all_findings.extend(normalize_progpilot(prog_json))
 
     # Build summary statistics
@@ -334,7 +348,7 @@ def main() -> int:
         "total_findings": len(all_findings),
         "by_tool": {},
         "by_severity": {"low": 0, "medium": 0, "high": 0, "critical": 0},
-        "scan_timestamp": datetime.utcnow().isoformat() + "Z",
+        "scan_timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         "phalanx_version": __version__
     }
 

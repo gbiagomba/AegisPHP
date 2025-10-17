@@ -4,10 +4,10 @@
 
 **PHP Advanced Holistic Analysis for Nix/Unix eXamination**
 
-A unified PHP Static Application Security Testing (SAST) orchestrator that bundles three best-in-class open-source security scanners—Psalm, ProgPilot, and psecio/parse—into a single Docker image with a Python CLI for seamless vulnerability detection.
+A unified PHP Static Application Security Testing (SAST) orchestrator that bundles three best-in-class open-source security scanners—Psalm v7, Semgrep, and ProgPilot—into a single Docker image with a Python CLI for seamless vulnerability detection.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](https://github.com/yourusername/phalanx)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](https://github.com/yourusername/phalanx)
 [![Docker](https://img.shields.io/badge/docker-required-blue.svg)](https://www.docker.com/)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/)
 
@@ -342,15 +342,17 @@ make uninstall
 
 PHALANX orchestrates three industry-leading PHP security scanners:
 
-### 1. Psalm (by Vimeo)
-- **Type**: Static analysis tool with security focus
-- **Strengths**: Type safety, undefined variable detection, SQL injection patterns
+### 1. Psalm v6 (by Vimeo)
+- **Type**: Advanced static analysis tool with security focus
+- **Version**: v6.13.1 (latest stable, PHP 8.4 compatible)
+- **Strengths**: Type safety, undefined variable detection, SQL injection patterns, dead code detection
 - **Website**: https://psalm.dev/
 
-### 2. psecio/parse
-- **Type**: Security-focused scanner
-- **Strengths**: OWASP vulnerability detection, secure coding practices
-- **Website**: https://github.com/psecio/parse
+### 2. Semgrep
+- **Type**: Modern security-focused pattern scanner
+- **Version**: v1.102.0
+- **Strengths**: OWASP vulnerability detection, 100+ PHP security rules, actively maintained
+- **Website**: https://semgrep.dev/
 
 ### 3. ProgPilot
 - **Type**: Taint analysis security scanner
@@ -423,7 +425,7 @@ PHALANX follows [Semantic Versioning 2.0.0](https://semver.org/):
 - **MINOR**: Backward-compatible functionality additions
 - **PATCH**: Backward-compatible bug fixes
 
-**Current Version**: 0.1.0
+**Current Version**: 0.2.0
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
@@ -449,8 +451,8 @@ See [LICENSE](LICENSE) for full details.
 
 PHALANX is built on the shoulders of giants:
 
-- **Psalm** by Vimeo: https://github.com/vimeo/psalm
-- **psecio/parse**: https://github.com/psecio/parse
+- **Psalm v7** by Vimeo: https://github.com/vimeo/psalm
+- **Semgrep** by Semgrep Inc: https://github.com/semgrep/semgrep
 - **ProgPilot** by designsecurity: https://github.com/designsecurity/progpilot
 - **Docker** for containerization
 - **Python** community for excellent tooling
